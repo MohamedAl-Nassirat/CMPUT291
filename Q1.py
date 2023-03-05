@@ -58,6 +58,10 @@ def main():
         time = Question1("A3Large.db")
         useroptimized_time_large.append(time)
     
+    print(useroptimized_time_large)
+    print(selfoptimized_time_medium)
+    print(uninformed_time_small)
+
 
 
 def Question1(filename):
@@ -87,12 +91,12 @@ WHERE oi.order_id IN (
         WHERE o.customer_id IN (
             SELECT c.customer_id 
             FROM Customers c 
-            WHERE c.customer_postal_code = {random_postal_code}
-            )
-       )
-    """
+            WHERE c.customer_postal_code = ?
+        )
     )
-    end_time = time.pref_counter()
+""", (random_postal_code[0][0],))
+    
+    end_time = time.perf_counter()
     elapsed_time = (end_time - start_time) * 1000
 
     return elapsed_time
