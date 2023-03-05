@@ -5,12 +5,20 @@
 import sqlite3
 import csv
 import random
+import os
 
 
-def main():
-    createDB("A3Small.db", "small", "uninformed")
+# def main():
+#     createDB("A3Small.db", "small", "uninformed")
+#     createDB("A3Small.db", "small", "self-optimized")
+#     createDB("A3Small.db", "small", "user-optimized")
+#     createDB("A3Medium.db", "medium", "uninformed")
+#     createDB("A3Medium.db", "medium", "self-optimized")
+#     createDB("A3Medium.db", "medium", "user-optimized")    
+#     createDB("A3Large.db", "large", "uninformed")
+#     createDB("A3Large.db", "large", "self-optimized")
+#     createDB("A3Large.db", "large", "user-optimized")
     
-
 
 def insertRandomCustomer(filename, size):
     with open(filename, 'r') as csvfile:
@@ -43,7 +51,6 @@ def insertRandomOrder(filename, size):
             rows = rows[:size]
     return rows
 
-
 def insertRandomOrderItem(filename, size):
     with open(filename, 'r') as csvfile:
             csv_reader = csv.DictReader(csvfile)
@@ -54,9 +61,10 @@ def insertRandomOrderItem(filename, size):
             rows = rows[:size]
     return rows
 
-
-
 def createDB(dbName, size, mode):
+    if os.path.isfile(dbName):
+        os.remove(dbName)
+    
     conn = sqlite3.connect(dbName)
     c = conn.cursor()
 
@@ -131,6 +139,58 @@ def createDB(dbName, size, mode):
         )
         """
         )
+    elif mode == "user-optimized":
+        conn.execute('PRAGMA automatic_index = true')
+        c.execute(""" 
+        CREATE TABLE "Customers" (
+        "customer_id" TEXT, 
+        "customer_postal_code" INTEGER,
+        PRIMARY KEY("customer_id")
+        );
+        """
+        )
+        c.execute(""" 
+        CREATE TABLE Sellers (
+        "seller_id" TEXT,
+        "seller_postal_code" INTEGER,
+        PRIMARY KEY("seller_id")
+        )
+        """
+        )
+        c.execute(""" 
+        CREATE TABLE Orders (
+        "order_id" TEXT,
+        "customer_id" TEXT, 
+        PRIMARY KEY("order_id"),
+        FOREIGN KEY("customer_id") REFERENCES "Customers"("customer_id")
+        )
+        """
+        )
+        c.execute(""" 
+        CREATE TABLE Order_items (
+        "order_id" TEXT,
+        "order_item_id" INTEGER, 
+        "product_id" TEXT,
+        "seller_id" TEXT,
+        PRIMARY KEY("order_id","order_item_id","product_id","seller_id"),
+        FOREIGN KEY("seller_id") REFERENCES "Sellers"("seller_id")
+        FOREIGN KEY("order_id") REFERENCES "Orders"("order_id")
+        )
+        """
+        )
+        c.executescript("""
+        CREATE UNIQUE INDEX customerIdx
+        ON Customers(customer_id);
+
+        CREATE UNIQUE INDEX sellersIdx
+        ON Sellers(seller_id);
+
+        CREATE UNIQUE INDEX ordersIdx
+        ON Orders(order_id);
+
+        CREATE UNIQUE INDEX orderItemsIdx
+        On Order_items(order_id,order_item_id,product_id,seller_id);
+        """)
 
     if size  == "small":
         customerData = insertRandomCustomer("olist_customers_dataset.csv", 10000)
@@ -172,9 +232,6 @@ def createDB(dbName, size, mode):
         column_orderItem = list(orderItemsData[0].keys())
 
 
-
-
-
    
     placeholders = ', '.join(['?' for _ in column_customer])
     insert_query = f'INSERT INTO Customers ({", ".join(column_customer)}) VALUES ({placeholders})'
@@ -193,22 +250,11 @@ def createDB(dbName, size, mode):
     c.executemany(insert_query, [tuple(row[column_orderItem] for column_orderItem in column_orderItem) for row in orderItemsData])
 
 
-
-
-
-    
-
     conn.commit()
     conn.close()
 
 
 
-
-
-
-
-
-
-main()
+# main()
 
 
