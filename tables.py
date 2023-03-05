@@ -61,8 +61,7 @@ def createDB(dbName, size, mode):
     c = conn.cursor()
 
     if mode == "uninformed":
-        conn.execute('PRAGMA automatic_index = off')
-        
+        conn.execute('PRAGMA automatic_index = false')
         c.execute(""" 
         CREATE TABLE "Customers" (
         "customer_id" TEXT, 
@@ -93,7 +92,45 @@ def createDB(dbName, size, mode):
         )
         """
         )
-
+    elif mode == "self-optimized":
+        conn.execute('PRAGMA automatic_index = true')
+        c.execute(""" 
+        CREATE TABLE "Customers" (
+        "customer_id" TEXT, 
+        "customer_postal_code" INTEGER,
+        PRIMARY KEY("customer_id")
+        );
+        """
+        )
+        c.execute(""" 
+        CREATE TABLE Sellers (
+        "seller_id" TEXT,
+        "seller_postal_code" INTEGER,
+        PRIMARY KEY("seller_id")
+        )
+        """
+        )
+        c.execute(""" 
+        CREATE TABLE Orders (
+        "order_id" TEXT,
+        "customer_id" TEXT, 
+        PRIMARY KEY("order_id"),
+        FOREIGN KEY("customer_id") REFERENCES "Customers"("customer_id")
+        )
+        """
+        )
+        c.execute(""" 
+        CREATE TABLE Order_items (
+        "order_id" TEXT,
+        "order_item_id" INTEGER, 
+        "product_id" TEXT,
+        "seller_id" TEXT,
+        PRIMARY KEY("order_id","order_item_id","product_id","seller_id"),
+        FOREIGN KEY("seller_id") REFERENCES "Sellers"("seller_id")
+        FOREIGN KEY("order_id") REFERENCES "Orders"("order_id")
+        )
+        """
+        )
 
     if size  == "small":
         customerData = insertRandomCustomer("olist_customers_dataset.csv", 10000)
