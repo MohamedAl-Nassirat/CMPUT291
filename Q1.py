@@ -58,9 +58,16 @@ def main():
         time = Question1("A3Large.db")
         useroptimized_time_large.append(time)
     
-    print(useroptimized_time_large)
-    print(selfoptimized_time_medium)
-    print(uninformed_time_small)
+
+    ## Write times out into txt for spreadsheet
+    file1 = open("Q1_Timing.txt", "w")
+    file1.write("useroptimized_time_large " + "selfoptimized_time_medium " + "uninformed_time_small " + "\n")
+    for i in range(len(useroptimized_time_large)):
+        file1.write(str(uninformed_time_large[i]) + " ")
+        file1.write(str(selfoptimized_time_medium[i])+ " ")
+        file1.write(str(uninformed_time_small[i]) + '\n')
+
+
 
 
 
@@ -98,7 +105,7 @@ WHERE oi.order_id IN (
     
     end_time = time.perf_counter()
     elapsed_time = (end_time - start_time) * 1000
-
+    conn.close()
     return elapsed_time
 
 main()
