@@ -57,13 +57,6 @@ def main():
         time = Question2("A3Large.db")
         useroptimized_time_large.append(time)
 
-    ## Write times out into txt for spreadsheet
-    file1 = open("Q2_Timing.txt", "w")
-    file1.write("useroptimized_time_large " + "selfoptimized_time_medium " + "uninformed_time_small " + "\n")
-    for i in range(len(useroptimized_time_large)):
-        file1.write(str(uninformed_time_large[i]) + " ")
-        file1.write(str(selfoptimized_time_medium[i])+ " ")
-        file1.write(str(uninformed_time_small[i]) + '\n')
 
     
 
@@ -81,15 +74,15 @@ def Question2(filename):
     LIMIT 1;
     """)
     random_postal_code = c.fetchall()
-
-
-    start_time = time.perf_counter()
     c.execute("""
-    CREATE VIEW OrderSize AS
+    CREATE VIEW IF NOT EXISTS OrderSize AS
         SELECT order_id AS oid, SUM(order_item_id) AS size
         FROM Order_items
         GROUP BY order_id;
+    """)
 
+    start_time = time.perf_counter()
+    c.execute("""
     SELECT COUNT(DISTINCT oi.order_id)
     FROM Order_items oi
     WHERE oi.order_id IN (

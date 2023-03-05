@@ -58,13 +58,7 @@ def main():
         useroptimized_time_large.append(time)
 
 
-    file1 = open("Q3_Timing.txt", "w")
-    file1.write("useroptimized_time_large " + "selfoptimized_time_medium " + "uninformed_time_small " + "\n")
-    for i in range(len(useroptimized_time_large)):
-        file1.write(str(uninformed_time_large[i]) + "| ")
-        file1.write(str(selfoptimized_time_medium[i])+ "| ")
-        file1.write(str(uninformed_time_small[i]) + '| \n')
-    
+
 
 
 
@@ -80,8 +74,6 @@ def Question3(filename):
     LIMIT 1;
     """)
     random_postal_code = c.fetchall()
-
-
     start_time = time.perf_counter()
     c.execute("""
     SELECT COUNT(DISTINCT oi.order_id)
@@ -100,7 +92,7 @@ def Question3(filename):
             WHERE o.customer_id IN (
                 SELECT c.customer_id 
                 FROM Customers c 
-                WHERE c.customer_postal_code = 2002
+                WHERE c.customer_postal_code = ?
                 )
         )
 """, (random_postal_code[0][0],))

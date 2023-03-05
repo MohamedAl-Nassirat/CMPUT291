@@ -59,13 +59,12 @@ def main():
         useroptimized_time_large.append(time)
     
 
-    ## Write times out into txt for spreadsheet
-    file1 = open("Q1_Timing.txt", "w")
-    file1.write("useroptimized_time_large " + "selfoptimized_time_medium " + "uninformed_time_small " + "\n")
-    for i in range(len(useroptimized_time_large)):
-        file1.write(str(uninformed_time_large[i]) + " ")
-        file1.write(str(selfoptimized_time_medium[i])+ " ")
-        file1.write(str(uninformed_time_small[i]) + '\n')
+    # ## Write times out into txt for spreadsheet
+    # file1 = open("Q1_Timing.txt", "w")
+    # file1.write("useroptimized_time_large " + "selfoptimized_time_medium " + "uninformed_time_small " + "\n")
+    # for i in range(len(useroptimized_time_large)):
+    #     file1.write(str(uninformed_time_small[i]) + "\n")
+
 
 
 
