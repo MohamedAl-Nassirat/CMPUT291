@@ -79,11 +79,10 @@ def main():
         p = ax.bar(categories, weight_count, width, label=boolean, bottom=bottom)
         bottom += weight_count
 
-    ax.set_title("Average time to complete task for each optimization approach")
+    ax.set_title("Query 1 (runtime in ms)")
     ax.legend(loc="upper left")
 
-    plt.show()
-
+    plt.savefig("Q1A3chart.png")
 
 
 

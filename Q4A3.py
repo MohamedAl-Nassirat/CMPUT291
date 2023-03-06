@@ -79,10 +79,12 @@ def main():
         p = ax.bar(categories, weight_count, width, label=boolean, bottom=bottom)
         bottom += weight_count
 
-    ax.set_title("Average time to complete task for each optimization approach")
+    ax.set_title("Query 2 (runtime in ms)")
     ax.legend(loc="upper left")
 
-    plt.show()
+    plt.savefig("Q4A3chart.png")
+
+    
     
 
 
@@ -93,41 +95,29 @@ def Question2(filename):
     conn = sqlite3.connect(filename)
     c = conn.cursor()
     c.execute("""
-    SELECT C.customer_postal_code
-    FROM Customers C
-    ORDER BY RANDOM()
-    LIMIT 1;
+        SELECT customer_id
+        FROM Orders
+        WHERE customer_id in (
+        SELECT customer_id
+        FROM Orders
+        group by customer_id
+        HAVING count(*) > 1
+        )
+        ORDER BY RANDOM()
+        LIMIT 1;
     """)
-    random_postal_code = c.fetchall()
-    c.execute("""
-    CREATE VIEW IF NOT EXISTS OrderSize AS
-        SELECT order_id AS oid, SUM(order_item_id) AS size
-        FROM Order_items
-        GROUP BY order_id;
-    """)
+    random_customer_id = c.fetchall()
 
     start_time = time.perf_counter()
     c.execute("""
-    SELECT COUNT(DISTINCT oi.order_id)
-    FROM Order_items oi
-    WHERE oi.order_id IN (
-        SELECT oi2.order_id
-        FROM Order_items oi2
-        GROUP BY oi2.order_id
-        HAVING COUNT(DISTINCT oi2.order_item_id) > (select avg(size)
-                                                    From OrderSize)
-        )
-        AND oi.order_id IN (
-            SELECT o.order_id
-            FROM Orders o
-            WHERE o.customer_id IN (
-                SELECT c.customer_id 
-                FROM Customers c 
-                WHERE c.customer_postal_code = ?
-                )
-        )
+    SELECT COUNT(DISTINCT s.seller_postal_code) AS Unique_seller_count
+    FROM Orders o, Order_Items oi, Sellers s, Customers c
+    WHERE oi.order_id = o.order_id
+    AND s.seller_id = oi.seller_id
+    AND c.customer_id = o.customer_id
+    AND c.customer_postal_code = ?;
     
-""", (random_postal_code[0][0],))
+""", (random_customer_id[0][0],))
     
     end_time = time.perf_counter()
     elapsed_time = (end_time - start_time) * 1000

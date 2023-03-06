@@ -9,53 +9,53 @@ def main():
     uninformed_time_small=[]
     tables.createDB("A3Small.db","small","uninformed")
     for i in range(50):
-        time = Question2("A3Small.db")
+        time = Question3("A3Small.db")
         uninformed_time_small.append(time)
       
     selfoptimized_time_small=[]
     tables.createDB("A3Small.db","small","self-optimized")
     for i in range(50):
-        time = Question2("A3Small.db")
+        time = Question3("A3Small.db")
         selfoptimized_time_small.append(time)
      
     useroptimized_time_small=[]
     tables.createDB("A3Small.db","small","user-optimized")
     for i in range(50):
-        time = Question2("A3Small.db")
+        time = Question3("A3Small.db")
         useroptimized_time_small.append(time)
     
     """Medium"""
     uninformed_time_medium=[]
     tables.createDB("A3Medium.db","medium","uninformed")
     for i in range(50):
-        time = Question2("A3Medium.db")
+        time = Question3("A3Medium.db")
         uninformed_time_medium.append(time)
     selfoptimized_time_medium=[]
     tables.createDB("A3Medium.db","medium","self-optimized")
     for i in range(50):
-        time = Question2("A3Medium.db")
+        time = Question3("A3Medium.db")
         selfoptimized_time_medium.append(time)
     useroptimized_time_medium=[]
     tables.createDB("A3Medium.db","medium","user-optimized")
     for i in range(50):
-        time = Question2("A3Medium.db")
+        time = Question3("A3Medium.db")
         useroptimized_time_medium.append(time)
     
     """Large"""
     uninformed_time_large=[]
     tables.createDB("A3Large.db","large","uninformed")
     for i in range(50):
-        time = Question2("A3Large.db")
+        time = Question3("A3Large.db")
         uninformed_time_large.append(time)
     selfoptimized_time_large=[]
     tables.createDB("A3Large.db","large","self-optimized")
     for i in range(50):
-        time = Question2("A3Large.db")
+        time = Question3("A3Large.db")
         selfoptimized_time_large.append(time)
     useroptimized_time_large=[]
     tables.createDB("A3Large.db","large","user-optimized")
     for i in range(50):
-        time = Question2("A3Large.db")
+        time = Question3("A3Large.db")
         useroptimized_time_large.append(time)
 
 
@@ -79,44 +79,48 @@ def main():
         p = ax.bar(categories, weight_count, width, label=boolean, bottom=bottom)
         bottom += weight_count
 
-    ax.set_title("Average time to complete task for each optimization approach")
+    ax.set_title("Query 3 (runtime in ms)")
     ax.legend(loc="upper left")
 
-    plt.show()
+    plt.savefig("Q3A3chart.png")
     
-    
 
 
 
 
 
-def Question2(filename):
+def Question3(filename):
     conn = sqlite3.connect(filename)
     c = conn.cursor()
     c.execute("""
-        SELECT customer_id
-        FROM Orders
-        WHERE customer_id in (
-        SELECT customer_id
-        FROM Orders
-        group by customer_id
-        HAVING count(*) > 1
-        )
-        ORDER BY RANDOM()
-        LIMIT 1;
+    SELECT C.customer_postal_code
+    FROM Customers C
+    ORDER BY RANDOM()
+    LIMIT 1;
     """)
-    random_customer_id = c.fetchall()
-
+    random_postal_code = c.fetchall()
     start_time = time.perf_counter()
     c.execute("""
-    SELECT COUNT(DISTINCT s.seller_postal_code) AS Unique_seller_count
-    FROM Orders o, Order_Items oi, Sellers s, Customers c
-    WHERE oi.order_id = o.order_id
-    AND s.seller_id = oi.seller_id
-    AND c.customer_id = o.customer_id
-    AND c.customer_postal_code = ?;
-    
-""", (random_customer_id[0][0],))
+    SELECT COUNT(DISTINCT oi.order_id)
+    FROM Order_items oi
+    WHERE oi.order_id IN (
+        SELECT oi2.order_id
+        FROM Order_items oi2
+        GROUP BY oi2.order_id
+        HAVING COUNT(DISTINCT oi2.order_item_id) > ( SELECT  SUM(order_item_id)
+                                                    FROM Order_items
+                                                    GROUP BY order_id)
+        )
+        AND oi.order_id IN (
+            SELECT o.order_id
+            FROM Orders o
+            WHERE o.customer_id IN (
+                SELECT c.customer_id 
+                FROM Customers c 
+                WHERE c.customer_postal_code = ?
+                )
+        )
+""", (random_postal_code[0][0],))
     
     end_time = time.perf_counter()
     elapsed_time = (end_time - start_time) * 1000
