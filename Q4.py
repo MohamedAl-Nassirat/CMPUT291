@@ -1,7 +1,8 @@
 import tables
 import time
 import sqlite3
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 def main():
     """Small"""
@@ -58,7 +59,31 @@ def main():
         useroptimized_time_large.append(time)
 
 
+    categories = (
+        "SmallDB\n",
+        "MediumDB\n",
+        "LargeDB\n",
+    )
+    weight_counts = {
+        "Uninformed": np.array([np.mean(uninformed_time_small), np.mean(uninformed_time_medium), np.mean(uninformed_time_large)]),
+        "Self-Optimized": np.array([np.mean(selfoptimized_time_small), np.mean(selfoptimized_time_medium), np.mean(selfoptimized_time_large)]),
+        "User-Optimized": np.array([np.mean(useroptimized_time_small), np.mean(useroptimized_time_medium), np.mean(useroptimized_time_large)])
+    }
 
+    width = 0.5
+
+    fig, ax = plt.subplots()
+    bottom = np.zeros(3)
+
+    for boolean, weight_count in weight_counts.items():
+        p = ax.bar(categories, weight_count, width, label=boolean, bottom=bottom)
+        bottom += weight_count
+
+    ax.set_title("Average time to complete task for each optimization approach")
+    ax.legend(loc="upper left")
+
+    plt.show()
+    
     
 
 
